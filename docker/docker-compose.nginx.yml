@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  wwatch-nginx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nginx
+    container_name: wwatch-nginx
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

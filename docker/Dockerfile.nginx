@@ -1,0 +1,27 @@
+# Dockerfile alternativo usando nginx (más ligero para producción)
+# Usar este en lugar de Dockerfile si prefieres más performance
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Nginx
+FROM nginx:alpine
+
+# Copiar configuración nginx personalizada
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copiar archivos compilados (en la carpeta browser)
+COPY --from=builder /app/dist/Wwatch/browser /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
