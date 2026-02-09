@@ -12,16 +12,8 @@ RUN npm ci
 # Copiar el código fuente
 COPY . .
 
-# Recibir variables de build y crear environment.production.ts
-ARG TMDB_API_URL=https://api.themoviedb.org/3
-ARG TMDB_API_TOKEN=YOUR_API_TOKEN
-
-RUN mkdir -p src/environments && \
-    echo "export const environment = { \
-      production: true, \
-      apiUrl: '$TMDB_API_URL', \
-      apiToken: '$TMDB_API_TOKEN' \
-    };" > src/environments/environment.production.ts
+# Usar environment.production.ts del código fuente
+# Si necesitas inyectar valores en tiempo de ejecución, usa un script de inicialización
 
 # Compilar la aplicación Angular
 RUN npm run build
@@ -61,6 +53,11 @@ RUN echo 'server { \
 # Copiar archivos compilados de Angular (en la carpeta browser)
 COPY --from=builder /app/dist/Wwatch/browser /usr/share/nginx/html
 
+# Copiar plantilla de configuración para inyección en runtime
+COPY --from=builder /app/public/config.template.js /usr/share/nginx/html/config.template.js
+COPY --from=builder /app/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Exponer puerto
 EXPOSE 80
 
@@ -68,5 +65,6 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Comando para servir con Nginx
+# Ejecutar entrypoint que generará config.js y luego arrancará nginx
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
