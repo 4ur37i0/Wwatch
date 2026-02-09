@@ -1,0 +1,5 @@
+export const environment = {
+  production: false,
+  apiUrl: 'https://api.themoviedb.org/3',
+  apiToken: '', // Set from your local development token or .env
+};

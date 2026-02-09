@@ -12,8 +12,13 @@ RUN npm ci
 # Copiar el código fuente
 COPY . .
 
-# Usar environment.production.ts del código fuente
-# Si necesitas inyectar valores en tiempo de ejecución, usa un script de inicialización
+# Crear archivos environment si no existen (para builds en EasyPanel/CI)
+RUN if [ ! -f src/environments/environment.ts ]; then \
+      cp src/environments/environment.ts.example src/environments/environment.ts; \
+    fi && \
+    if [ ! -f src/environments/environment.production.ts ]; then \
+      cp src/environments/environment.production.ts.example src/environments/environment.production.ts; \
+    fi
 
 # Compilar la aplicación Angular
 RUN npm run build
