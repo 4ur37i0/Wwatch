@@ -17,7 +17,6 @@ export class InputSearchComponent {
   selectedMovie: any = null;
   providers: any = null;
   showModal = false;
-  loadingProviders = false;
 
   constructor(
     private movieService: MovieService,
@@ -31,7 +30,7 @@ export class InputSearchComponent {
       next: (response: any) => {
         this.movies = response.results;
         this.cdr.detectChanges();
-        console.log(this.movies);
+        //console.log(this.movies);
       },
       error: (err: any) => {
         console.error('Error al buscar películas', err);
@@ -43,18 +42,16 @@ export class InputSearchComponent {
   openProviders(movie: any) {
     this.selectedMovie = movie;
     this.showModal = true;
-    this.loadingProviders = true;
     this.providers = null;
 
     this.movieService.getWatchProviders(movie.id).subscribe({
       next: (response: any) => {
         this.providers = response.results?.MX || null;
-        this.loadingProviders = false;
+        //console.log(this.providers);
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('Error obteniendo plataformas', err);
-        this.loadingProviders = false;
         this.cdr.detectChanges();
       }
     });
